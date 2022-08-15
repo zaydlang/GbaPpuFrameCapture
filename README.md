@@ -10,6 +10,6 @@ First, you need to compile the rom. You can configure two things:
 
 Once you run the rom, it will tell you what the size of the compressed results in SRAM are. Save this number.
 
- put the resulting save file in the `interp` folder, and name it `results.sav`. make and run the C program in there (use the saved number as the first parameter), and it will generate a map that shows you where the idles occurred. 0 = no idle, 1 = idle, left = start of scanline, right = end of scanline. It will also create a `decompressed-results.sav` which contains this information in binary form in case you want to use the data to visualize things or whatever.
+Make and run the C program in the `interp` folder (use the save file path as the first parameter and the saved number as the second parameter), and it will generate a map that shows you where the idles occurred. 0 = no idle, 1 = idle, left = start of scanline, right = end of scanline. It will also create a `decompressed-results.sav` which contains this information in binary form in case you want to use the data to visualize things or whatever.
 
 There's also a python script in `interp` to visualize the result data but it doesn't work. Might fix it later.
