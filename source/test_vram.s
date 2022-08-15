@@ -4,58 +4,15 @@
 .section .iwram,"ax",%progbits
 .arm
 
-.global TestVram, TestVram_NopSlide, TestVramFast
+.global TestVramSlow, TestVram_NopSlide, TestVramFast_Loop
 
-TestVram:
-    @ we have 19 cycles to set up any useful stuff we want before VCOUNT increments.
-    mov r0, #0x06000000           @ 1 cycles
-    mov r1, #0x04000000           @ 1 cycles
-    mov r2, #0x800000             @ 1 cycles
-    mov r3, #0                    @ 1 cycle
-    ldr r4, =TestVram_PerformTest @ 3 cycles
-    b TestVram_SkipLiteralPool    @ 3 cycles
-
-    @ skip the literal pool
-.ltorg
-
-TestVram_SkipLiteralPool:
-    str r3, [r1, #0x100]
-    nop
-
-    @ in 6 cycles, VCOUNT will have incremented once.
-    @ we will insert a nop slide here with 1232 nops.
-    @ main.c will, one by one, replace each nop with a
-    @ bx r4 to perform the test. this bx will take
-    @ exactly 3 cycles, meaning we then have 3 more
-    @ cycles before the targetted cycle occurs. conveniently,
-    @ the strh to start the timer takes 2 cycles, and
-    @ the ldr from VRAM that follows it will perform
-    @ the read after 1 cycle.
-
-TestVram_NopSlide:
-    m_idle_1000_cycles
-    m_idle_100_cycles
-    m_idle_100_cycles
-    m_idle_10_cycles
-    m_idle_10_cycles
-    m_idle_10_cycles
-    nop
-    nop
-    bx lr
-
-.ltorg
-
-TestVram_PerformTest:
-    str r2, [r1, #0x100] @ 2 cycles
-    ldrb r0, [r0]  @ 1 cycle until the read from VRAM occurs
-    ldr r0, [r1, #0x100]
-
-    bx lr
+@ fast version that captures a whole frame
 
 TestVramFast:
+    @ we have 19 cycles to set up any useful stuff we want before VCOUNT increments.
+    
     push {r5, r6, r7, r8} @ 4 cycles
 
-    @ we have 19 cycles to set up any useful stuff we want before VCOUNT increments.
     mov r0,  #0x06000000           @ 1 cycles
     mov r1,  #0x04000000           @ 1 cycles
     mov r2,  #0x800000             @ 1 cycles
@@ -114,3 +71,51 @@ TestVramFast:
     bx lr
 
 .ltorg
+
+@ slow version that captures a single scanline, slowly.
+
+TestVramSlow:
+    @ we have 19 cycles to set up any useful stuff we want before VCOUNT increments.
+    mov r0, #0x06000000           @ 1 cycles
+    mov r1, #0x04000000           @ 1 cycles
+    mov r2, #0x800000             @ 1 cycles
+    mov r3, #0                    @ 1 cycle
+    ldr r4, =TestVram_PerformTest @ 3 cycles
+    b TestVram_SkipLiteralPool    @ 3 cycles
+
+    @ skip the literal pool
+.ltorg
+
+TestVram_SkipLiteralPool:
+    str r3, [r1, #0x100]
+    nop
+
+    @ in 6 cycles, VCOUNT will have incremented once.
+    @ we will insert a nop slide here with 1232 nops.
+    @ main.c will, one by one, replace each nop with a
+    @ bx r4 to perform the test. this bx will take
+    @ exactly 3 cycles, meaning we then have 3 more
+    @ cycles before the targetted cycle occurs. conveniently,
+    @ the strh to start the timer takes 2 cycles, and
+    @ the ldr from VRAM that follows it will perform
+    @ the read after 1 cycle.
+
+TestVram_NopSlide:
+    m_idle_1000_cycles
+    m_idle_100_cycles
+    m_idle_100_cycles
+    m_idle_10_cycles
+    m_idle_10_cycles
+    m_idle_10_cycles
+    nop
+    nop
+    bx lr
+
+.ltorg
+
+TestVram_PerformTest:
+    str r2, [r1, #0x100] @ 2 cycles
+    ldrb r0, [r0]  @ 1 cycle until the read from VRAM occurs
+    ldr r0, [r1, #0x100]
+
+    bx lr

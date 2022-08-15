@@ -5,7 +5,7 @@
 #include "shrink.h"
 
 extern int SyncToVcount(int scanline, int (*callback)(void));
-extern int TestVram(void);
+extern int TestVramSlow(void);
 extern int TestVramFast(void);
 extern volatile u32 TestVram_NopSlide[1232];
 
@@ -75,7 +75,7 @@ void slow() {
     for (int i = 0; i < 240 * 4; i++) {
         if (i != 0) TestVram_NopSlide[i - 1] = 0xE320F000; // nop
         TestVram_NopSlide[i] = 0xe12fff14; // bx r4
-        int result = SyncToVcount(140, &TestVram) & 0xF;
+        int result = SyncToVcount(140, &TestVramSlow) & 0xF;
 
         int x = i >> 2;
         int y = i & 3;
