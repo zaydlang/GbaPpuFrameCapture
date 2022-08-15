@@ -4,13 +4,13 @@
 .section .iwram,"ax",%progbits
 .arm
 
-.global TestVramSlow, TestVram_NopSlide, TestVramFast_Loop
+.global TestVramFast, TestVramSlow, TestVram_NopSlide, TestVramFast_Loop
 
 @ fast version that captures a whole frame
 
 TestVramFast:
     @ we have 19 cycles to set up any useful stuff we want before VCOUNT increments.
-    
+
     push {r5, r6, r7, r8} @ 4 cycles
 
     mov r0,  #0x06000000           @ 1 cycles

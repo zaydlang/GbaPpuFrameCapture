@@ -13,20 +13,29 @@ unsigned int count_set_bits(unsigned int n)
     return count;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("use like this:\n ./interpret <file> <compressed_size (hex, w/o the leading 0x)>");
+        return -1;
+    }
+
+    char* file_name = argv[1];
+    int compressed_len = strtol(argv[2], NULL, 16);
+    printf("%s %x\n", file_name, compressed_len);
+
     FILE *fileptr;
     char *buffer;
     long filelen;
 
     char* result = (char*) malloc(280896 / 8 * sizeof(char));
 
-    fileptr = fopen("results.sav", "rb");
+    fileptr = fopen(file_name, "rb");
     buffer = (char *)malloc(0x8000 * sizeof(char));
     fread(buffer, 0x8000, 1, fileptr);
     fclose(fileptr);
 
     long unsigned int outlength = 280896 / 8;
-    shrink_buffer(CODEC_LZSS, 0, buffer, 0x1030, result, &outlength);
+    shrink_buffer(CODEC_LZSS, 0, buffer, compressed_len, result, &outlength);
 
     if (outlength != 280896 / 8) {
         printf("output length: %d (supposed to be %d)\n", outlength, 280896 / 8);
